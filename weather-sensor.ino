@@ -13,35 +13,40 @@
 Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println(F("BME280 test"));
+  //Serial.begin(9600);
+  //Serial.println(F("BME280 test"));
 
   //if (!bme.begin(0x76)) {
   if (!bme.begin()) {
-
-    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    Particle.publish("Could not find a valid BME280 sensor, check wiring!");
+    //Serial.println("Could not find a valid BME280 sensor, check wiring!");
     //while (1);
+  }
+  else {
+      Particle.publish("BME280 Initialised");
   }
 }
 
 void loop() {
-    Serial.print("Temperature = ");
-    Serial.print(bme.readTemperature());
-    Serial.println(" *C");
+    String temp = String(bme.readTemperature());
+    String pressure =  String(bme.readPressure() / 100.0F);
+    String altitude = String(bme.readAltitude(SEALEVELPRESSURE_HPA));
+    String humidity = String(bme.readHumidity());
+    
+    Particle.publish("Temperature (*c)", temp);
+    Particle.publish("thingSpeakWrite_A0", "{ \"1\": \"" + temp + "\",\"2\": \"" + pressure + "\",\"3\": \"" + humidity + "\", \"k\": \"B6UJAY8N06AQR0D1\" }", 60, PRIVATE);
+    delay(2000);
+    Particle.publish("Pressure (hPa)", pressure);
+    
+    delay(2000);
+    Particle.publish("Approx. Altitude (m)", altitude); 
+    
+    delay(2000);
+    Particle.publish("Humidity (%)", humidity); 
+    
+    delay(2000);
 
-    Serial.print("Pressure = ");
+    //1 minute = 60000000 microseconds
 
-    Serial.print(bme.readPressure() / 100.0F);
-    Serial.println(" hPa");
-
-    Serial.print("Approx. Altitude = ");
-    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-    Serial.println(" m");
-
-    Serial.print("Humidity = ");
-    Serial.print(bme.readHumidity());
-    Serial.println(" %");
-
-    Serial.println("test");
-    delay(20000);
+    delay(1000000);
 }
